@@ -1,0 +1,359 @@
+<title>Atelier ABC de la Faculté</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Schibsted+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Concept : le dossier du Doyen. Les chiffres se règlent en haut, chaque année de l'histoire se recalcule dessous. */
+:root{
+  --bg:#F3F6F7; --surface:#FFFFFF; --ink:#121C25; --mute:#56636D; --line:#D3DADF; --tint:#E7EEF2;
+  --rev:#1A5F8F; --cost:#B26A00; --gain:#1E7A4C; --loss:#B3382E; --warnbg:#FBEBD2; --gainbg:#DCEFE3; --lossbg:#F6DAD6;
+  --f-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E151B; --surface:#16202A; --ink:#E7EDF1; --mute:#92A0AB; --line:#2A3844; --tint:#1D2A35;
+  --rev:#6FB3E5; --cost:#E2A24C; --gain:#5CC08A; --loss:#F0877D; --warnbg:#3A2C14; --gainbg:#16352A; --lossbg:#3C1F1C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E151B; --surface:#16202A; --ink:#E7EDF1; --mute:#92A0AB; --line:#2A3844; --tint:#1D2A35;
+  --rev:#6FB3E5; --cost:#E2A24C; --gain:#5CC08A; --loss:#F0877D; --warnbg:#3A2C14; --gainbg:#16352A; --lossbg:#3C1F1C; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:20px 48px}
+.wrap{max-width:1040px;margin-inline:auto;display:flex;flex-direction:column;gap:18px;min-width:0}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(26px,5vw,38px);letter-spacing:-.01em}
+h2{font-size:21px}h3{font-size:16px}
+p{margin:0}
+.lede{color:var(--mute);max-width:64ch;margin-top:6px}
+.eyebrow{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--cost);font-weight:600}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:13px;font-weight:600}
+.field small{color:var(--mute);font-size:12px;line-height:1.35}
+.field input[type=number]{font:inherit;font-family:var(--f-num);font-size:16px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:100%;min-width:0}
+input:focus-visible,button:focus-visible{outline:2px solid var(--rev);outline-offset:2px}
+input[type=range]{width:100%;accent-color:var(--rev)}
+.bar-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+button{font:inherit;cursor:pointer;color:var(--ink)}
+.ghost{background:none;border:1px solid var(--line);border-radius:6px;padding:5px 10px;font-size:13px}
+.ghost:hover{background:var(--tint)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.tab{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-size:14px;font-weight:600;white-space:nowrap}
+.tab[aria-selected=true]{background:var(--rev);border-color:var(--rev);color:#fff}
+:root[data-theme=dark] .tab[aria-selected=true]{color:#0E151B}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .tab[aria-selected=true]{color:#0E151B}}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.seg .tab{padding:6px 11px;font-size:13px}
+.sec[hidden]{display:none}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:20px;align-items:start}
+@media (max-width:760px){.cols{grid-template-columns:minmax(0,1fr)}}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}
+.tile .k{font-size:12px;color:var(--mute);line-height:1.3}
+.tile .v{font-family:var(--f-num);font-size:19px;font-weight:500;margin-top:2px;overflow-wrap:anywhere}
+.tile .f{font-size:11.5px;color:var(--mute);margin-top:2px;font-family:var(--f-num)}
+.pos{color:var(--gain)}.neg{color:var(--loss)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;font-weight:600;border-radius:999px;padding:4px 11px;display:inline-flex;gap:6px;align-items:center}
+.chip.ok{background:var(--gainbg);color:var(--gain)}.chip.bad{background:var(--lossbg);color:var(--loss)}.chip.warn{background:var(--warnbg);color:var(--cost)}
+.say{background:var(--tint);border-radius:8px;padding:11px 13px;font-size:14px}
+.say b{font-weight:600}
+.how{color:var(--mute);font-size:14px}
+.how b{color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--mute);margin-bottom:6px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.chartwrap{min-width:0}
+.readout{font-family:var(--f-num);font-size:12.5px;min-height:2.6em;color:var(--ink);margin-bottom:4px}
+svg{display:block;max-width:100%;touch-action:pan-y}
+svg text{font-family:var(--f-body);fill:var(--mute);font-size:11px}
+svg .halo{paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
+.grid{stroke:var(--line);stroke-width:1}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--mute);font-size:12.5px;white-space:nowrap}
+td.n,th.n{text-align:right;font-family:var(--f-num);white-space:nowrap}
+td input[type=number]{font:inherit;font-family:var(--f-num);font-size:14px;width:92px;padding:5px 6px;border:1px solid var(--line);border-radius:5px;background:var(--bg);color:var(--ink)}
+.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
+.mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+footer{font-size:12.5px;color:var(--mute);max-width:80ch}
+@media (prefers-reduced-motion:no-preference){.tab,.ghost{transition:background .15s}}
+
+.recap-card{border:1px solid var(--line);border-left:4px solid var(--rev);border-radius:8px;padding:14px 16px;background:var(--surface)}
+.recap-card h3{margin-bottom:4px}
+.recap-card .big{font-family:var(--f-num);font-size:22px;margin:6px 0}
+.big-mode{font-size:18px}
+.big-mode .tile .v{font-size:24px}
+details{border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+summary{cursor:pointer;font-weight:600;font-size:14px}
+details[open] summary{margin-bottom:8px}
+.flow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:10px}
+@media (max-width:760px){.flow{grid-template-columns:minmax(0,1fr)}}
+.flow .col{border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.flow .col h4{margin:0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.flow .row span:first-child{min-width:0}.flow .row{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.step{display:inline-flex;width:24px;height:24px;border-radius:50%;background:var(--rev);color:#fff;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none}
+.qrbox{background:#fff;border-radius:12px;padding:12px;width:min(100%,460px);margin-inline:auto;border:1px solid var(--line)}
+.q{background:var(--warnbg);border-radius:8px;padding:10px 12px;font-size:14px}
+</style>
+<div class="wrap">
+<header>
+  <span class="eyebrow">Chapitres 9 et 10 · de la clé unique à l'ABC et au TD-ABC</span>
+  <h1>Atelier ABC de la Faculté</h1>
+  <p class="lede">L'histoire de M. Alaoui, du Doyen et de la formation aménagée, année par année. Changez un montant dans la bande ci-dessous : chaque méthode se recalcule. Le dernier onglet résume tout pour un public. Les chiffres de départ sont ceux de l'histoire.</p>
+</header>
+
+<section class="panel" aria-labelledby="h-in">
+  <div class="bar-top"><h2 id="h-in">Les chiffres de la Faculté</h2><button class="ghost" id="reset" type="button">Remettre l'histoire</button></div>
+  <div class="inputs" id="band"></div>
+  <details style="margin-top:14px"><summary>Les charges indirectes par nature, réparties entre les 3 activités (DH)</summary>
+    <div class="tw"><table id="mat"><thead><tr><th>Nature de la charge</th><th class="n">Salles et amphis</th><th class="n">Gestion administrative</th><th class="n">Ouverture exceptionnelle</th><th class="n">Total</th></tr></thead><tbody></tbody></table></div>
+    <p class="how" style="margin-top:8px">Chaque ligne dit : cette charge sert à quelle activité ? Les années 1 à 4 utilisent ce même tableau.</p>
+  </details>
+</section>
+
+<div class="tabs" role="tablist" aria-label="Années de l'histoire" id="tabs"></div>
+
+<section class="panel sec stack" id="s0" role="tabpanel" aria-labelledby="t0"></section>
+<section class="panel sec stack" id="s1" role="tabpanel" aria-labelledby="t1" hidden></section>
+<section class="panel sec stack" id="s2" role="tabpanel" aria-labelledby="t2" hidden></section>
+<section class="panel sec stack" id="s3" role="tabpanel" aria-labelledby="t3" hidden></section>
+<section class="panel sec stack" id="s4" role="tabpanel" aria-labelledby="t4" hidden></section>
+<section class="panel sec stack" id="s5" role="tabpanel" aria-labelledby="t5" hidden></section>
+<section class="panel sec stack" id="s6" role="tabpanel" aria-labelledby="t6" hidden>
+  <h2>Rejoignez l'atelier depuis votre téléphone</h2>
+  <p class="how">Ouvrez l'appareil photo de votre téléphone, pointez le code, puis touchez le lien qui s'affiche. Vous pourrez changer les chiffres vous-même.</p>
+  <div class="qrbox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" width="100%" shape-rendering="crispEdges" role="img" aria-label="Code QR vers https://abcrecap.netlify.app/" style="max-width:420px;display:block"><path fill="#fff" d="M0 0h33v33h-33z"/><path stroke="#000" d="M2 2.5h7m3 0h2m4 0h1m5 0h7m-29 1h1m5 0h1m2 0h1m4 0h7m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m2 0h1m1 0h3m1 0h2m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h2m1 0h1m2 0h1m2 0h1m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m2 0h3m2 0h1m5 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h1m4 0h3m2 0h3m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-20 1h2m1 0h1m1 0h4m1 0h1m-19 1h1m2 0h1m1 0h1m1 0h3m1 0h2m2 0h4m1 0h1m1 0h2m1 0h1m-27 1h1m1 0h2m4 0h1m1 0h1m2 0h3m2 0h1m3 0h3m2 0h2m-29 1h1m2 0h2m1 0h1m1 0h1m1 0h7m3 0h2m4 0h1m1 0h1m-28 1h3m3 0h3m2 0h1m1 0h1m2 0h1m3 0h1m1 0h3m1 0h2m-26 1h1m1 0h4m1 0h2m3 0h1m1 0h1m1 0h2m2 0h1m1 0h1m2 0h1m-29 1h2m3 0h1m1 0h1m3 0h4m2 0h2m3 0h1m1 0h1m1 0h1m1 0h1m-29 1h1m2 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h1m1 0h1m1 0h1m1 0h1m3 0h1m-27 1h4m1 0h1m2 0h1m2 0h3m1 0h2m2 0h1m1 0h1m1 0h1m1 0h1m-28 1h1m1 0h6m2 0h4m1 0h2m1 0h4m5 0h2m-29 1h1m1 0h1m5 0h2m1 0h4m3 0h1m2 0h4m1 0h1m1 0h1m-26 1h1m1 0h5m2 0h4m1 0h2m4 0h1m1 0h1m2 0h1m-26 1h2m2 0h2m5 0h7m3 0h2m2 0h1m-29 1h2m1 0h1m1 0h4m4 0h2m1 0h2m2 0h5m2 0h2m-21 1h1m3 0h5m1 0h3m3 0h1m1 0h1m1 0h1m-29 1h7m3 0h3m2 0h1m1 0h1m1 0h2m1 0h1m1 0h1m2 0h2m-29 1h1m5 0h1m3 0h3m1 0h4m1 0h2m3 0h2m1 0h2m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h2m5 0h7m-25 1h1m1 0h3m1 0h1m3 0h1m1 0h3m1 0h1m1 0h1m4 0h1m2 0h2m-28 1h1m1 0h3m1 0h1m5 0h1m1 0h1m1 0h1m2 0h3m5 0h2m-29 1h1m5 0h1m1 0h5m4 0h2m1 0h2m1 0h1m1 0h1m1 0h2m-29 1h7m3 0h3m2 0h1m1 0h1m1 0h3m2 0h2m1 0h1"/></svg></div>
+  <p class="num" style="text-align:center;font-size:18px;overflow-wrap:anywhere" id="qrurl">https://abcrecap.netlify.app/</p>
+  <div class="chips" style="justify-content:center"><button class="ghost" id="cp" type="button">Copier le lien</button><span id="cpm" class="how" aria-live="polite"></span></div>
+</section>
+
+<footer>Chiffres de l'histoire de la Faculté (exemple pédagogique). Les coûts de l'ABC des années 2 et 3 sont inventés pour l'exercice. Les unités sont en dirhams (DH).</footer>
+</div>
+
+<script>
+const DEF={fee:2000,nN:900,nA:100,dN:300,dA:500,
+ hN:2000,hA:500,iN:300,iA:700,jN:0,jA:100,
+ L0:320000,A0:90000,
+ mat:[["Salaires du personnel administratif",0,220000,30000],["Gardiennage et sécurité",40000,0,160000],["Électricité, eau, climatisation",150000,0,100000],["Entretien et nettoyage",140000,0,10000],["Amortissement bâtiments et équipements",70000,30000,0],["Fournitures et divers",0,50000,0]],
+ j2:60,i2:500,fee2:4500,
+ c2:150000,c3:130000,iA3:600,
+ tdCost:300000,tdCap:300000,base:120,extra:180,hsN:0,hsA:700,base2:60};
+const sum=a=>a.reduce((t,x)=>t+x,0);
+const dv=(a,b)=>b?a/b:0;
+function year0(s){const ind=dv(s.L0+s.A0,s.nN);const m=s.fee-s.dN-ind;return{ind,m,total:m*s.nN,rev:s.fee*s.nN}}
+function acts(s){return[0,1,2].map(j=>sum(s.mat.map(r=>r[j+1])))}
+function full(s){const a=acts(s),pool=sum(a),n=s.nN+s.nA,pe=dv(pool,n);
+ const mN=s.fee-s.dN-pe,mA=s.fee-s.dA-pe;
+ return{pool,pe,locaux:a[0]+a[2],admin:a[1],mN,mA,total:mN*s.nN+mA*s.nA}}
+function predicted(s){const y=year0(s);return y.total+s.nA*(s.fee-s.dA-Math.round(y.ind))}
+function abc(s){const a=acts(s);const uN=[s.hN,s.iN,s.jN],uA=[s.hA,s.iA,s.jA];
+ const tot=uN.map((x,i)=>x+uA[i]);const rate=a.map((c,i)=>dv(c,tot[i]));
+ const cN=uN.map((x,i)=>x*rate[i]),cA=uA.map((x,i)=>x*rate[i]);
+ const indN=sum(cN),indA=sum(cA),iNp=dv(indN,s.nN),iAp=dv(indA,s.nA);
+ const mN=s.fee-s.dN-iNp,mA=s.fee-s.dA-iAp;
+ return{acts:a,tot,rate,cN,cA,indN,indA,iNp,iAp,mN,mA,totN:mN*s.nN,totA:mA*s.nA,total:mN*s.nN+mA*s.nA,
+  shareA:[dv(s.nA,s.nN+s.nA),dv(s.hA,tot[0]),dv(s.iA,tot[1]),dv(s.jA,tot[2])]}}
+function subsidy(s){const f=full(s),b=abc(s);return{pays:s.nN*f.pe-b.indN,gets:b.indA-s.nA*f.pe}}
+function abm(s,b){b=b||abc(s);const indA2=s.hA*b.rate[0]+s.i2*b.rate[1]+s.j2*b.rate[2];
+ const iAp=dv(indA2,s.nA),mA=s.fee2-s.dA-iAp,totA=mA*s.nA,total=b.totN+totA;
+ return{indA2,iAp,mA,totA,total,gain:total-b.total,saveJ:(s.jA-s.j2)*b.rate[2],saveI:(s.iA-s.i2)*b.rate[1],rev:(s.fee2-s.fee)*s.nA}}
+function td(s,base){base=base==null?s.base:base;const cpm=dv(s.tdCost,s.tdCap),b=abc(s);
+ const tN=s.iN-s.hsN,tA=s.iA-s.hsA;
+ const minN=tN*base+s.hsN*(base+s.extra),minA=tA*base+s.hsA*(base+s.extra);
+ const cN=minN*cpm,cA=minA*cpm,used=minN+minA,unused=s.tdCost-(cN+cA),unusedPct=dv(unused,s.tdCost);
+ const iNp=dv(b.cN[0]+b.cN[2]+cN,s.nN),iAp=dv(b.cA[0]+b.cA[2]+cA,s.nA);
+ const mN=s.fee-s.dN-iNp,mA=s.fee-s.dA-iAp;
+ return{cpm,minN,minA,cN,cA,unused,unusedPct,iNp,iAp,mN,mA,std:base,hs:base+s.extra,
+  adminN:dv(cN,s.nN),adminA:dv(cA,s.nA),total:mN*s.nN+mA*s.nA-unused}}
+function recount(s){const t=s.iN+s.iA;const s2=Object.assign({},s,{iA:s.iA3,iN:t-s.iA3});return abc(s2)}
+if(typeof module!=='undefined')module.exports={DEF,year0,acts,full,predicted,abc,subsidy,abm,td,recount};
+
+const $=id=>document.getElementById(id);
+let S=JSON.parse(JSON.stringify(DEF));
+const F=n=>{const r=Math.round(n);return (r<0?'−':'')+Math.abs(r).toLocaleString('fr-FR').replace(/ | /g,' ')};
+const D=n=>F(n)+' DH';
+const sg=n=>'<span class="'+(Math.round(n)<0?'neg':'pos')+'">'+F(n)+' DH</span>';
+const P=n=>Math.round(n*100)+' %';
+const tile=(k,v,f)=>'<div class="tile"><div class="k">'+k+'</div><div class="v">'+v+'</div>'+(f?'<div class="f">'+f+'</div>':'')+'</div>';
+const tbl=(head,rows)=>'<div class="tw"><table><thead><tr>'+head.map((h,i)=>'<th'+(i?' class="n"':'')+'>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map((c,i)=>'<td'+(i?' class="n"':'')+'>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+const who=(t)=>'<div class="say">'+t+'</div>';
+const ask=(q,a)=>'<details class="q"><summary>Question à la salle : '+q+'</summary><p style="margin-top:6px">'+a+'</p></details>';
+
+/* Bandeau d'entrées */
+const BAND=[
+ ['fee','Frais payés par étudiant (DH)','Même tarif pour les deux formations.',100],
+ ['nN','Étudiants, formation normale','Cours du jour.',10],
+ ['nA','Étudiants, formation aménagée','Fonctionnaires : soir et week-end.',10],
+ ['dN','Coûts directs / étudiant, normale (DH)','Vacations, supports, examens.',10],
+ ['dA','Coûts directs / étudiant, aménagée (DH)','Vacataires du soir, supports en ligne.',10],
+ ['hN','Heures de salle, normale','Inducteur de « Salles et amphis ».',50],
+ ['hA','Heures de salle, aménagée','',50],
+ ['iN','Interventions administratives, normale','Inducteur de « Gestion administrative ».',10],
+ ['iA','Interventions administratives, aménagée','Un dossier traité = une intervention.',10],
+ ['jN','Jours d\'ouverture exceptionnelle, normale','Inducteur de « Ouverture exceptionnelle ».',1],
+ ['jA','Jours d\'ouverture exceptionnelle, aménagée','Soirs et week-ends où on ouvre le bâtiment.',1],
+ ['L0','Année 0 · section Locaux (DH)','Avant la formation aménagée.',10000],
+ ['A0','Année 0 · section Administration (DH)','',10000]
+];
+function inp(k,label,small,step){return '<div class="field"><label for="'+k+'">'+label+'</label><input id="'+k+'" data-k="'+k+'" type="number" inputmode="decimal" min="0" step="'+step+'" value="'+S[k]+'">'+(small?'<small>'+small+'</small>':'')+'</div>'}
+$('band').innerHTML=BAND.map(b=>inp(...b)).join('');
+function buildMat(){$('mat').querySelector('tbody').innerHTML=S.mat.map((r,i)=>'<tr><td>'+r[0]+'</td>'+[1,2,3].map(j=>'<td class="n"><input type="number" min="0" step="10000" data-m="'+i+','+j+'" value="'+r[j]+'" aria-label="'+r[0]+', colonne '+j+'"></td>').join('')+'<td class="n" id="mt'+i+'"></td></tr>').join('')+'<tr><td><b>Coût de l\'activité</b></td>'+[0,1,2].map(j=>'<td class="n" id="ma'+j+'"></td>').join('')+'<td class="n" id="mT"></td></tr>'}
+buildMat();
+
+/* Onglets */
+const TABS=['Année 0 · Tout va bien','Année 1 · Le piège','Année 2 · ABC et ABM','Année 3 · Le coût de l\'ABC','Année 4 · TD-ABC','Récap pour l\'audience','Accès étudiants'];
+$('tabs').innerHTML=TABS.map((t,i)=>'<button class="tab" role="tab" id="t'+i+'" aria-controls="s'+i+'" aria-selected="'+(i===0)+'" type="button">'+t+'</button>').join('');
+let cur=0;
+function show(i){cur=i;TABS.forEach((_,k)=>{$('t'+k).setAttribute('aria-selected',k===i);$('s'+k).hidden=k!==i});}
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)show(+b.id.slice(1))});
+
+/* Graphique : marges par étudiant, deux formations */
+function hbars(rows){
+  const W=600,rowH=62,pad=8,L=10,R=10,labelH=16,bh=14;
+  const mx=Math.max(1,...rows.flatMap(r=>[Math.abs(r.a),Math.abs(r.b)]));
+  const mn=Math.min(0,...rows.flatMap(r=>[r.a,r.b]));
+  const neg=mn<0, zx=neg?W*0.3:L+20, scale=(W-zx-R-150)/mx, nscale=neg?(zx-L)/Math.abs(mn):0;
+  const x=v=>v>=0?zx+v*scale:zx+v*nscale;
+  let g='';
+  rows.forEach((r,i)=>{const y=pad+i*rowH;g+='<line x1="'+zx+'" x2="'+zx+'" y1="'+(y+labelH-2)+'" y2="'+(y+labelH+2*bh+6)+'" style="stroke:var(--mute)"/>';
+    g+='<text x="'+L+'" y="'+(y+11)+'" style="fill:var(--ink);font-weight:600;font-size:12px">'+r.label+'</text>';
+    [['a',r.a,'var(--rev)','Normale'],['b',r.b,'var(--cost)','Aménagée']].forEach(([k,v,c,nm],j)=>{
+      const yy=y+labelH+j*(bh+4),x0=Math.min(x(0),x(v)),w=Math.max(1,Math.abs(x(v)-x(0)));
+      g+='<rect x="'+x0+'" y="'+yy+'" width="'+w+'" height="'+bh+'" rx="2" fill="'+c+'"/>';
+      const tx=x(Math.max(v,0))+6;
+      g+='<text class="halo" x="'+tx+'" y="'+(yy+11)+'" text-anchor="start" style="fill:var(--ink);font-family:var(--f-num);font-size:11.5px">'+nm+' '+F(v)+'</text>';});
+  });
+  const H=pad+rows.length*rowH;
+  
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="max-width:640px" width="100%" role="img" aria-label="Marge par étudiant selon la méthode">'+g+'</svg>';
+}
+const LEG='<div class="legend"><span><i style="background:var(--rev)"></i>Formation normale</span><span><i style="background:var(--cost)"></i>Formation aménagée</span></div>';
+
+function render(){
+  const y0=year0(S),fu=full(S),ab=abc(S),su=subsidy(S),am=abm(S,ab),t=td(S),t2=td(S,S.base2),rc=recount(S),pr=predicted(S);
+  /* matrice */
+  S.mat.forEach((r,i)=>{$('mt'+i).textContent=F(r[1]+r[2]+r[3])});
+  [0,1,2].forEach(j=>{$('ma'+j).innerHTML='<b>'+F(ab.acts[j])+'</b>'});$('mT').innerHTML='<b>'+F(fu.pool)+'</b>';
+  const nT=S.nN+S.nA;
+
+  /* 0 */
+  $('s0').innerHTML='<h2>Année 0 : un compteur unique, l\'étudiant</h2>'+
+  '<p class="how">Il n\'y a qu\'une formation. M. Alaoui répartit les charges indirectes en <b>deux sections homogènes</b> (Locaux, Administration) et partage chaque section par <b>étudiant inscrit</b> (l\'unité d\'œuvre).</p>'+
+  '<div class="tiles">'+tile('Locaux ÷ étudiants',D(S.L0/S.nN),F(S.L0)+' ÷ '+F(S.nN))+tile('Administration ÷ étudiants',D(S.A0/S.nN),F(S.A0)+' ÷ '+F(S.nN))+tile('Indirect par étudiant',D(y0.ind))+tile('Marge par étudiant',sg(y0.m),F(S.fee)+' − '+F(S.dN)+' − '+F(y0.ind))+tile('Résultat de l\'année',sg(y0.total))+'</div>'+
+  tbl(['Par étudiant','Calcul','DH'],[['Frais payés','',F(S.fee)],['Coûts directs','',F(S.dN)],['Indirect (Locaux + Administration)',F(S.L0/S.nN)+' + '+F(S.A0/S.nN),F(y0.ind)],['Marge','',sg(y0.m)]])+
+  who('<b>Pourquoi ça marche ici :</b> tous les étudiants ont le même emploi du temps, le même amphi, les mêmes papiers. Un étudiant est un étudiant : la clé « par étudiant » suit la vraie cause du coût.')+
+  ask('Pourquoi cette méthode marche ici ?','Parce que tous les étudiants consomment pareil. Si la consommation devient différente, la règle devient fausse (scène suivante).');
+
+  /* 1 */
+  const rowsC=[['Étudiants',S.nN,S.nA,P(S.nA/nT)],['Heures de salle',S.hN,S.hA,P(ab.shareA[1])],['Interventions administratives',S.iN,S.iA,P(ab.shareA[2])],['Jours d\'ouverture exceptionnelle',S.jN,S.jA,P(ab.shareA[3])]].map(r=>[r[0],F(r[1]),F(r[2]),r[3]]);
+  $('s1').innerHTML='<h2>Année 1 : le Doyen ouvre une formation aménagée</h2>'+
+  '<p class="how">Le Doyen applique la règle de l\'année 0 et espère un meilleur résultat. La réalité est tout autre.</p>'+
+  '<div class="tiles">'+tile('Prévu par le Doyen',sg(pr),'résultat de l\'année 0 + '+F(S.nA)+' × '+F(S.fee-S.dA-Math.round(y0.ind)))+tile('Réalisé',sg(fu.total),'coûts complets')+tile('Écart',sg(fu.total-pr))+tile('Indirect / étudiant, normale','<span class="neg">'+D(fu.pe)+'</span>','année 0 : '+D(y0.ind)+' · +'+F(fu.pe-y0.ind))+'</div>'+
+  '<h3>Le bilan en coûts complets (sections homogènes, 1 compteur : l\'étudiant)</h3>'+
+  tbl(['','Normale','Aménagée'],[['Section Locaux ÷ étudiants ('+F(fu.locaux)+')',D(fu.locaux/nT),D(fu.locaux/nT)],['Section Administration ÷ étudiants ('+F(fu.admin)+')',D(fu.admin/nT),D(fu.admin/nT)],['Indirect total par étudiant',D(fu.pe),D(fu.pe)],['Marge par étudiant',sg(fu.mN),sg(fu.mA)]])+
+  '<h3>L\'enquête : qui cause quoi ?</h3>'+
+  tbl(['Cause','Normale','Aménagée','Part aménagée'],rowsC)+
+  who('<b>Subventionnement croisé :</b> un produit voit son coût surestimé pendant qu\'un autre voit son coût sous-estimé. Ici, les étudiants de la formation normale paient trop (<span class="num">'+D(su.pays)+'</span> en tout) et la formation aménagée paie trop peu (<span class="num">'+D(su.gets)+'</span>). Somme nulle : l\'argent est seulement déplacé.')+
+  ask('À votre avis, qui paie pour qui ?','Les étudiants de la formation normale paient pour les fonctionnaires. Ils n\'ont rien changé, mais leur indirect est passé de '+D(y0.ind)+' à '+D(fu.pe)+'.');
+
+  /* 2 */
+  const act=['Salles et amphis','Gestion administrative','Ouverture exceptionnelle'],ind=['Heures de salle','Interventions','Jours d\'ouverture'];
+  const uN=[S.hN,S.iN,S.jN],uA=[S.hA,S.iA,S.jA];
+  $('s2').innerHTML='<h2>Année 2 : l\'ABC, les charges suivent leurs causes</h2>'+
+  '<div class="flow"><div class="col"><h4>1 · Ressources (par nature)</h4>'+S.mat.map(r=>'<div class="row"><span>'+r[0]+'</span><span class="num">'+F(r[1]+r[2]+r[3])+'</span></div>').join('')+'<div class="row"><b>Total</b><b class="num">'+F(fu.pool)+'</b></div></div>'+
+  '<div class="col"><h4>2 · Activités</h4>'+act.map((a,i)=>'<div class="row"><span>'+a+'</span><span class="num">'+F(ab.acts[i])+'</span></div><div class="row" style="color:var(--mute)"><span>'+ind[i]+' : '+F(ab.tot[i])+'</span><span class="num">'+F(ab.rate[i])+' DH</span></div>').join('')+'</div>'+
+  '<div class="col"><h4>3 · Formations</h4><div class="row"><span>Normale</span><span class="num">'+F(ab.indN)+'</span></div><div class="row" style="color:var(--mute)"><span>par étudiant</span><span class="num">'+F(ab.iNp)+'</span></div><div class="row"><span>Aménagée</span><span class="num">'+F(ab.indA)+'</span></div><div class="row" style="color:var(--mute)"><span>par étudiant</span><span class="num">'+F(ab.iAp)+'</span></div></div></div>'+
+  '<p class="how">Les activités consomment les ressources, puis les formations consomment les activités : <b>quantité consommée × coût de l\'inducteur</b>.</p>'+
+  tbl(['Activité','Normale','Aménagée'],act.map((a,i)=>[a+' ('+F(uN[i])+' / '+F(uA[i])+' × '+F(ab.rate[i])+')',F(ab.cN[i]),F(ab.cA[i])]).concat([['<b>Indirect total</b>','<b>'+F(ab.indN)+'</b>','<b>'+F(ab.indA)+'</b>'],['Indirect par étudiant',F(ab.iNp),F(ab.iAp)],['Coûts directs par étudiant',F(S.dN),F(S.dA)],['Marge par étudiant',sg(ab.mN),sg(ab.mA)],['Marge totale',sg(ab.totN),sg(ab.totA)]]))+
+  '<div class="chartwrap">'+LEG+hbars([{label:'Coûts complets (1 compteur)',a:fu.mN,b:fu.mA},{label:'ABC (3 inducteurs)',a:ab.mN,b:ab.mA}])+'</div>'+
+  '<div class="chips"><span class="chip warn">Total des deux : '+D(ab.total)+' (même qu\'en coûts complets : '+D(fu.total)+')</span></div>'+
+  who('<b>L\'ABC ne change pas le résultat total.</b> Il change la répartition : la formation normale retrouve son vrai coût, la formation aménagée découvre le sien.')+
+  '<h3>L\'ABM : agir sur les activités</h3>'+
+  '<div class="inputs">'+inp('j2','Jours d\'ouverture après regroupement','Avant : '+F(S.jA),1)+inp('i2','Interventions après guichet unique','Avant : '+F(S.iA),10)+inp('fee2','Frais de la formation aménagée après relèvement (DH)','Prise en charge par l\'employeur.',100)+'</div>'+
+  '<div class="tiles">'+tile('Gain des jours d\'ouverture',sg(am.saveJ),(S.jA-S.j2)+' jours × '+F(ab.rate[2])+' DH évités')+tile('Gain du guichet unique',sg(am.saveI),(S.iA-S.i2)+' interventions × '+F(ab.rate[1])+' DH évitées')+tile('Recettes en plus',sg(am.rev),F(S.fee2-S.fee)+' DH × '+F(S.nA))+tile('Marge, aménagée / étudiant',sg(am.mA),'indirect '+D(am.iAp))+tile('Résultat de la Faculté',sg(am.total),'avant : '+D(ab.total)+' · gain '+D(am.gain))+'</div>'+
+  '<p class="how">Hypothèse de simplification : les coûts unitaires des inducteurs restent les mêmes quand on réduit les volumes. En réalité, une partie de ces coûts est fixe.</p>'+
+  ask('Faut-il fermer la formation aménagée ?','L\'ABC ne dit pas « fermez ». Il dit où est le coût. On peut agir sur les jours d\'ouverture, les interventions et les frais. À discuter aussi : la mission de service public.');
+  $('s2').querySelectorAll('[data-k]').forEach(e=>{});
+
+  /* 3 */
+  const sysTot=S.c2;
+  $('s3').innerHTML='<h2>Année 3 : l\'ABC est précis, mais cher à tenir</h2>'+
+  '<p class="how">L\'ABC vaut son prix si les <b>indirects pèsent lourd</b> et si les produits sont <b>diversifiés</b>. À la Faculté, les indirects sont <b>'+P(fu.pool/(fu.pool+S.dN*S.nN+S.dA*S.nA))+'</b> des coûts totaux.</p>'+
+  '<div class="inputs">'+inp('c2','Coût de construction du système, année 2 (DH)','Consultante, interviews, outil de suivi.',10000)+inp('c3','Maintenance + extension, année 3 (DH)','Deux nouvelles filières.',10000)+inp('iA3','Interventions « aménagée » recomptées sur registre','Interviews : '+F(S.iA)+'. Le total reste '+F(S.iN+S.iA)+'.',10)+'</div>'+
+  '<div class="tiles">'+tile('Gain de l\'ABM (année 2)',sg(am.gain))+tile('Coût du système, année 2',sg(-S.c2))+tile('Bilan année 2',sg(am.gain-S.c2))+tile('Coût du système, année 3',sg(-S.c3),'sans nouveau gain chiffré')+'</div>'+
+  '<h3>Les données d\'interview sont subjectives</h3>'+
+  tbl(['','Interviews','Recomptage'],[['Interventions, aménagée',F(S.iA),F(S.iA3)],['Coût administratif imputé',F(S.iA*ab.rate[1]),F(S.iA3*ab.rate[1])],['Indirect total, aménagée',F(ab.indA),F(rc.indA)],['Indirect par étudiant, aménagée',F(ab.iAp),F(rc.iAp)],['Indirect par étudiant, normale',F(ab.iNp),F(rc.iNp)]])+
+  who('Un écart de <b>'+F(S.iA-S.iA3)+' interventions</b> change le coût de chaque fonctionnaire de <b>'+D(ab.iAp-rc.iAp)+'</b>. La précision de l\'ABC dépend de la qualité des données.')+
+  '<h3>Les quatre raisons d\'échec selon Kaplan</h3>'+
+  tbl(['Raison','Ce que vit M. Alaoui'],[['Coût prohibitif de construction','6 mois de consultante, '+D(S.c2)],['Données d\'interviews subjectives','Voir le recomptage ci-dessus'],['Maintenance difficile','Deux nouvelles filières : refaire les interviews'],['Coût de traitement des données','40 fiches mensuelles à remplir dans les services']]).replace(/class="n"/g,'')+
+  ask('Si vous étiez le Doyen, garderiez-vous l\'ABC ?','Oui pour la décision ponctuelle, mais il faut alléger le système. D\'où le TD-ABC.');
+
+  /* 4 */
+  $('s4').innerHTML='<h2>Année 4 : le TD-ABC, un seul inducteur, le temps</h2>'+
+  '<p class="how">On applique le TD-ABC à la <b>gestion administrative</b> (projet pilote). On calcule un coût par minute, puis une équation de temps : <b>temps = base + (supplément × X)</b>, avec X = 1 si la demande est hors standard, 0 sinon.</p>'+
+  '<div class="inputs">'+inp('tdCost','Coût du service de scolarité (DH)','Salaires, amortissement, fournitures.',10000)+inp('tdCap','Capacité normale (minutes)','3 agents, environ 80 % du temps théorique.',10000)+inp('base','Temps de base d\'une intervention (min)','',10)+inp('extra','Supplément hors standard (min)','Attestation employeur, horaires décalés…',10)+inp('hsN','Interventions hors standard, normale','',10)+inp('hsA','Interventions hors standard, aménagée','',10)+inp('base2','Temps de base après dématérialisation (min)','Un seul chiffre change.',10)+'</div>'+
+  '<div class="tiles">'+tile('Coût par minute',t.cpm.toFixed(2).replace('.',',')+' DH',F(S.tdCost)+' ÷ '+F(S.tdCap))+tile('Intervention standard',D(t.std*t.cpm),t.std+' min')+tile('Hors standard',D(t.hs*t.cpm),t.hs+' min')+tile('Capacité inutilisée','<span class="neg">'+D(t.unused)+'</span>',P(t.unusedPct)+' du service')+'</div>'+
+  tbl(['Gestion administrative','Normale','Aménagée','Total'],[['Interventions',F(S.iN),F(S.iA),F(S.iN+S.iA)],['Temps requis (min)',F(t.minN),F(t.minA),F(t.minN+t.minA)],['Coût imputé (DH)',F(t.cN),F(t.cA),F(t.cN+t.cA)],['Par étudiant',F(t.adminN),F(t.adminA),''],['Capacité inutilisée (DH)','','',F(t.unused)]])+
+  '<h3>ABC contre TD-ABC, par étudiant (formation normale)</h3>'+
+  tbl(['','ABC','TD-ABC'],[['Salles',F(ab.cN[0]/S.nN),F(ab.cN[0]/S.nN)],['Administration',F(ab.cN[1]/S.nN),F(t.adminN)],['Ouverture exceptionnelle',F(ab.cN[2]/S.nN),F(ab.cN[2]/S.nN)],['<b>Indirect total</b>','<b>'+F(ab.iNp)+'</b>','<b>'+F(t.iNp)+'</b>'],['Marge par étudiant',sg(ab.mN),sg(t.mN)]])+
+  '<p class="how">L\'ABC imputait '+D(ab.cN[1])+' aux interventions standard alors qu\'elles n\'en demandent que '+D(t.cN)+' : la différence cachait la capacité inutilisée dans le prix des interventions. Le TD-ABC la montre.</p>'+
+  '<h3>Changer un seul chiffre</h3>'+
+  '<div class="tiles">'+tile('Équation avant','temps = '+S.base+' + '+S.extra+' × X')+tile('Équation après','temps = '+S.base2+' + '+S.extra+' × X','interventions : '+t2.std+' min / '+t2.hs+' min')+tile('Temps requis après',F(t2.minN+t2.minA)+' min','avant : '+F(t.minN+t.minA))+tile('Capacité inutilisée après','<span class="neg">'+D(t2.unused)+'</span>',P(t2.unusedPct)+' du service')+'</div>'+
+  who('Pas de nouvelle interview, pas de nouvelle activité : <b>on change un chiffre</b> et la capacité inutilisée apparaît. Le Doyen peut redéployer des agents ou ne pas remplacer un départ à la retraite.')+
+  '<div class="chips"><span class="chip warn">Résultat total : '+D(t.total)+' = '+D(ab.total)+' (la capacité inutilisée est incluse)</span></div>'+
+  '<p class="how"><b>Limites du livre :</b> coûts standard ou réels ? capacité « normale » difficile à définir ; si les temps standard ne sont pas révisés, la méthode devient dangereuse ; l\'inducteur est presque toujours le temps (retour au modèle taylorien ?). Le livre dit qu\'il est trop tôt pour juger.</p>'+
+  ask('Qu\'est-ce que l\'ABC cachait et que le TD-ABC montre ?','La capacité inutilisée.');
+
+  /* 5 */
+  const cards=[
+   ['Année 0 · Un compteur unique','<div class="big">'+D(y0.ind)+' par étudiant</div>Marge : '+sg(y0.m)+' par étudiant, résultat '+sg(y0.total)+'. Ça marche parce que tous les étudiants consomment pareil.'],
+   ['Année 1 · La Faculté se diversifie','<div class="big">Prévu '+F(pr)+' · réalisé '+F(fu.total)+'</div>Le Doyen avait raison de rêver, tort de se fier à la règle. L\'indirect de la formation normale passe de '+D(y0.ind)+' à '+D(fu.pe)+' sans qu\'elle ait rien changé.'],
+   ['Le diagnostic · le subventionnement croisé','<div class="big">'+P(S.nA/nT)+' des étudiants, '+P(ab.shareA[2])+' des interventions, '+P(ab.shareA[3])+' des ouvertures</div>Les uns paient pour les autres : <b>'+D(su.pays)+'</b> déplacés. Jeu à somme nulle.'],
+   ['Année 2 · L\'ABC dit la vérité','<div class="big">'+F(ab.iNp)+' DH contre '+F(ab.iAp)+' DH</div>Marge par étudiant : '+sg(ab.mN)+' pour la formation normale, '+sg(ab.mA)+' pour l\'aménagée. Le total ne change pas : '+D(ab.total)+'.'],
+   ['L\'ABM · agir sur les activités','<div class="big">'+F(ab.total)+' → '+F(am.total)+' DH</div>Moins de jours d\'ouverture, un guichet unique, des frais relevés. L\'ABC calcule, l\'ABM agit.'],
+   ['Année 3 · Le prix de la vérité','<div class="big">'+D(S.c2)+' puis '+D(S.c3)+'</div>Mesure subjective ('+F(S.iA)+' contre '+F(S.iA3)+' interventions), maintenance lourde, 40 fiches par mois. L\'ABC est précis, mais cher à tenir.'],
+   ['Année 4 · Le TD-ABC simplifie','<div class="big">'+t.cpm.toFixed(0)+' DH par minute</div>Un seul inducteur, le temps. Et la capacité inutilisée apparaît : <b>'+D(t.unused)+'</b> ('+P(t.unusedPct)+'). Pour changer de processus, on change un chiffre de l\'équation.']
+  ];
+  $('s5').innerHTML='<div class="bar-top"><h2>Le récap pour l\'audience</h2><div class="chips"><button class="ghost" id="nx" type="button">Montrer la suite</button><button class="ghost" id="all" type="button">Tout afficher</button><button class="ghost" id="rs" type="button">Recommencer</button><button class="ghost" id="bg" type="button">Gros caractères</button></div></div>'+
+  '<div class="stack" id="cards">'+cards.map((c,i)=>'<div class="recap-card" data-i="'+i+'" '+(i>=recapN?'hidden':'')+'><span class="step">'+(i+1)+'</span> <h3 style="display:inline;margin-left:6px">'+c[0]+'</h3><div style="margin-top:6px">'+c[1]+'</div></div>').join('')+'</div>'+
+  '<div class="stack" id="fin" '+(recapN<cards.length?'hidden':'')+'>'+
+  '<h3>Tout est dit en un graphique : la marge par étudiant selon la méthode</h3>'+LEG+
+  hbars([{label:'Année 0 · sections homogènes',a:y0.m,b:0},{label:'Année 1 · coûts complets',a:fu.mN,b:fu.mA},{label:'Année 2 · ABC',a:ab.mN,b:ab.mA},{label:'Année 4 · TD-ABC',a:t.mN,b:t.mA}])+
+  tbl(['Méthode','Indirect normale','Indirect aménagée','Résultat total'],[['Année 0 · sections homogènes',F(y0.ind),'—',F(y0.total)],['Année 1 · coûts complets',F(fu.pe),F(fu.pe),F(fu.total)],['Année 2 · ABC',F(ab.iNp),F(ab.iAp),F(ab.total)],['Année 4 · TD-ABC',F(t.iNp),F(t.iAp),F(t.total)+' (dont '+F(t.unused)+' inutilisés)']])+
+  '<div class="say"><b>Ce qu\'il faut retenir.</b> Les méthodes ne créent pas d\'argent : elles changent la façon de le répartir entre les produits, donc les décisions. L\'ABC montre où est le coût, l\'ABM le fait baisser, le TD-ABC le rend simple à tenir et montre la capacité inutilisée.</div></div>';
+  $('s5').classList.toggle('big-mode',bigMode);
+  wireRecap(cards.length);
+}
+let recapN=1,bigMode=false;
+function wireRecap(n){
+  const upd=()=>{document.querySelectorAll('.recap-card').forEach(c=>c.hidden=+c.dataset.i>=recapN);$('fin').hidden=recapN<n;$('nx').disabled=recapN>=n};
+  $('nx').onclick=()=>{recapN=Math.min(n,recapN+1);upd()};
+  $('all').onclick=()=>{recapN=n;upd()};
+  $('rs').onclick=()=>{recapN=1;upd()};
+  $('bg').onclick=()=>{bigMode=!bigMode;$('s5').classList.toggle('big-mode',bigMode)};
+  upd();
+}
+
+/* Saisie : un seul écouteur, les champs restent en place (on ne recrée que les sorties) */
+function read(e){
+  const t=e.target;if(t.tagName!=='INPUT')return;
+  const v=parseFloat(t.value);const val=isFinite(v)&&v>=0?v:0;
+  if(t.dataset.k){S[t.dataset.k]=val}
+  else if(t.dataset.m){const [r,c]=t.dataset.m.split(',').map(Number);S.mat[r][c]=val}
+  else return;
+  renderKeep();
+}
+function renderKeep(){
+  const a=document.activeElement,id=a&&a.id,m=a&&a.dataset&&a.dataset.m,pos=a&&a.selectionStart;
+  render();
+  let el=id&&$(id);if(!el&&m)el=document.querySelector('[data-m="'+m+'"]');
+  if(el&&el!==document.activeElement){el.focus();try{el.setSelectionRange(pos,pos)}catch(_){}}
+}
+document.addEventListener('input',read);
+$('reset').onclick=()=>{S=JSON.parse(JSON.stringify(DEF));document.querySelectorAll('[data-k]').forEach(e=>e.value=S[e.dataset.k]);document.querySelectorAll('[data-m]').forEach(e=>{const [r,c]=e.dataset.m.split(',').map(Number);e.value=S.mat[r][c]});render()};
+$('cp').onclick=async()=>{try{await navigator.clipboard.writeText($('qrurl').textContent);$('cpm').textContent='Lien copié.'}catch(_){$('cpm').textContent='Copie impossible : sélectionnez le lien ci-dessus.'}};
+render();show(0);
+</script>
